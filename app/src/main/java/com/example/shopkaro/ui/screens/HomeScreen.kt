@@ -4,33 +4,25 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -41,92 +33,219 @@ import com.example.shopkaro.ui.theme.Star
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(modifier: Modifier, navigateToProduct: (id: Int) -> Unit) {
+fun HomeScreen(
+    modifier: Modifier,
+    navigateToProduct: (id: Int) -> Unit,
+    navigateToSearch: () -> Unit = {},
+    navigateToCategories: () -> Unit = {}
+) {
     val viewmodel: HomeViewModel = hiltViewModel()
     val products = viewmodel.products.collectAsState()
+    val categories = viewmodel.categories.collectAsState()
+    
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text(text = "Home") })
+            TopAppBar(
+                title = { Text(text = "ShopKaro", fontWeight = FontWeight.Bold) },
+                actions = {
+                    IconButton(onClick = navigateToSearch) {
+                        Icon(Icons.Default.Search, contentDescription = "Search")
+                    }
+                    IconButton(onClick = { /* Navigate to notifications */ }) {
+                        Icon(Icons.Default.Notifications, contentDescription = "Notifications")
+                    }
+                }
+            )
         }
     ) { innerPadding ->
-        Column(
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
             modifier = modifier
                 .fillMaxSize()
                 .background(Color.White)
-                .padding(innerPadding)
-                .padding(horizontal = 12.dp)
-
+                .padding(innerPadding),
+            contentPadding = PaddingValues(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            LazyVerticalGrid(columns = GridCells.Fixed(2)) {
-                item(span = { GridItemSpan(2) }) {
-                    Image(
-                        painter = rememberAsyncImagePainter("https://i.pinimg.com/564x/76/a2/ae/76a2ae7967725a93fb0cd42a1a28a8ba.jpg"),
-                        contentDescription = null,
+            // Search Bar
+            item(span = { GridItemSpan(2) }) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { navigateToSearch() },
+                    colors = CardDefaults.cardColors(containerColor = Color.Gray.copy(alpha = 0.1f))
+                ) {
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 16.dp)
-                            .height(180.dp)
-                            .clip(RoundedCornerShape(16.dp)),
-                        contentScale = ContentScale.FillBounds
-                    )
-                }
-                items(products.value) {
-                    Product(product = it, navigateToProduct)
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Search,
+                            contentDescription = "Search",
+                            tint = Color.Gray
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            "Search for products...",
+                            color = Color.Gray,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
             }
+            
+            // Banner
+            item(span = { GridItemSpan(2) }) {
+                Image(
+                    painter = rememberAsyncImagePainter("https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800"),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(160.dp)
+                        .clip(RoundedCornerShape(12.dp)),
+                    contentScale = ContentScale.Crop
+                )
+            }
+            
+            // Categories Section
+            item(span = { GridItemSpan(2) }) {
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "Categories",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        TextButton(onClick = navigateToCategories) {
+                            Text("View All")
+                        }
+                    }
+                    
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(categories.value.take(4)) { category ->
+                            CategoryChip(category = category.name)
+                        }
+                    }
+                }
+            }
+            
+            // Products Section Header
+            item(span = { GridItemSpan(2) }) {
+                Text(
+                    "Featured Products",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            }
+            
+            // Products
+            items(products.value) { product ->
+                Product(product = product, navigateToProduct = navigateToProduct)
+            }
         }
-
     }
+}
 
+@Composable
+fun CategoryChip(category: String) {
+    Card(
+        modifier = Modifier.width(100.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+    ) {
+        Text(
+            text = category.replaceFirstChar { it.uppercase() },
+            modifier = Modifier.padding(12.dp),
+            textAlign = TextAlign.Center,
+            fontSize = 12.sp,
+            maxLines = 1
+        )
+    }
 }
 
 
 @Composable
 fun Product(product: ProductResponse, navigateToProduct: (id: Int) -> Unit) {
-    Column(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(4.dp)
-            .background(Color.White)
-            .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, Color.LightGray, RoundedCornerShape(12.dp))
-            .clickable { navigateToProduct(product.id) }
-            .padding(16.dp)
-
+            .clickable { navigateToProduct(product.id) },
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Image(
-            rememberAsyncImagePainter(product.image),
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(180.dp)
-                .padding(8.dp)
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Row(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(12.dp)
+        ) {
+            Box {
+                Image(
+                    rememberAsyncImagePainter(product.image),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(140.dp)
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Crop
+                )
+                
+                // Wishlist icon
+                IconButton(
+                    onClick = { /* TODO: Add to wishlist */ },
+                    modifier = Modifier.align(Alignment.TopEnd)
+                ) {
+                    Icon(
+                        Icons.Default.FavoriteBorder,
+                        contentDescription = "Add to wishlist",
+                        tint = Color.Red
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
             Text(
                 text = product.title,
-                maxLines = 1,
-                color = Color.Black.copy(alpha = 0.5f),
-                modifier = Modifier.weight(1f)
+                maxLines = 2,
+                fontSize = 14.sp,
+                lineHeight = 18.sp
             )
-            Row {
-                Icon(
-                    Icons.Filled.Star, contentDescription = null, tint = Star,
-                    modifier = Modifier
-                        .width(20.dp)
-                        .height(20.dp)
+            
+            Spacer(modifier = Modifier.height(4.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "₹${product.price}",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
                 )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "${product.rating.rate}", color = Color.Black)
+                
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Filled.Star,
+                        contentDescription = null,
+                        tint = Star,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(2.dp))
+                    Text(
+                        text = "${product.rating.rate}",
+                        fontSize = 12.sp,
+                        color = Color.Gray
+                    )
+                }
             }
         }
-
-        Text(
-            text = "₹" + product.price.toString(),
-            fontSize = 18.sp,
-            color = Color.Black,
-            fontWeight = FontWeight.Bold
-        )
     }
 }

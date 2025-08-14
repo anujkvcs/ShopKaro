@@ -1,48 +1,30 @@
-package com.example.shopkaro.ui.screens
+package com.example.shopkaro.ui.screens.categories
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.shopkaro.data.models.Category
-import com.example.shopkaro.data.models.ProductResponse
 import com.example.shopkaro.data.repository.NetworkRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(private val networkRepository: NetworkRepository) :
-    ViewModel() {
-    private val _products = MutableStateFlow<List<ProductResponse>>(emptyList())
-    val products: StateFlow<List<ProductResponse>>
-        get() = _products
-        
+class CategoriesViewModel @Inject constructor(
+    private val repository: NetworkRepository
+) : ViewModel() {
+    
     private val _categories = MutableStateFlow<List<Category>>(emptyList())
-    val categories: StateFlow<List<Category>>
-        get() = _categories
-
+    val categories: StateFlow<List<Category>> = _categories.asStateFlow()
+    
     init {
-        fetchProducts()
         loadCategories()
-    }
-
-    fun fetchProducts() {
-        viewModelScope.launch {
-            try {
-                val products = networkRepository.fetchProducts()
-                _products.value = products
-            } catch (e: Exception) {
-                Log.d("MYDEBUG", e.message.toString())
-            }
-        }
     }
     
     private fun loadCategories() {
         viewModelScope.launch {
             try {
-                val products = networkRepository.getProducts()
+                val products = repository.getProducts()
                 val categoryMap = products.groupBy { it.category }
                 
                 val categoryList = categoryMap.map { (categoryName, products) ->
@@ -56,7 +38,7 @@ class HomeViewModel @Inject constructor(private val networkRepository: NetworkRe
                 
                 _categories.value = categoryList
             } catch (e: Exception) {
-                Log.d("MYDEBUG", "Categories error: ${e.message}")
+                _categories.value = emptyList()
             }
         }
     }

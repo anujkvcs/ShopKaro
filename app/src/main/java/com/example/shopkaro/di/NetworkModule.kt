@@ -1,11 +1,13 @@
 package com.example.shopkaro.di
 
+import android.content.Context
 import com.example.shopkaro.data.remote.NetworkApi
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -39,5 +41,11 @@ class NetworkModule {
     @Provides
     fun providesDatabase():FirebaseDatabase{
         return FirebaseDatabase.getInstance()
+    }
+    
+    @Singleton
+    @Provides
+    fun providesContext(@ApplicationContext context: Context): Context {
+        return context
     }
 }

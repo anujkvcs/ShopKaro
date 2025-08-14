@@ -16,11 +16,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.shopkaro.navigation.graphs.BottomNavGraph
-import com.example.shopkaro.navigation.graphs.BottomNavScreens
-import com.example.shopkaro.navigation.graphs.CartScreens
-import com.example.shopkaro.navigation.graphs.HomeScreens
-import com.example.shopkaro.navigation.graphs.ProfileScreens
+import com.example.shopkaro.navigation.graphs.*
 
 
 @Composable
@@ -32,6 +28,7 @@ fun MainScreen() {
             if (navBackStackEntry?.destination?.route == HomeScreens.HomeScreen.route
                 || navBackStackEntry?.destination?.route == ProfileScreens.ProfileScreen.route
                 || navBackStackEntry?.destination?.route == CartScreens.CartScreen.route
+                || navBackStackEntry?.destination?.route == "wishlist_screen"
             ) {
                 BottomBar(navController = navController)
             }
@@ -45,6 +42,7 @@ fun BottomBar(navController: NavHostController) {
     val items = listOf(
         BottomNavScreens.HomeScreen,
         BottomNavScreens.CartScreen,
+        BottomNavScreens.WishlistScreen,
         BottomNavScreens.ProfileScreen
     )
 

@@ -149,4 +149,31 @@ class FirebaseRepo @Inject constructor(
         }
         return null
     }
+    
+    // Wishlist functionality
+    suspend fun addToWishlist(productId: Int) {
+        val userId = firebaseAuth.currentUser?.uid ?: throw Exception("User not logged in")
+        val wishlistRef = firebaseDatabase.getReference("wishlist/$userId")
+        wishlistRef.child(productId.toString()).setValue(true).await()
+    }
+    
+    suspend fun removeFromWishlist(productId: Int) {
+        val userId = firebaseAuth.currentUser?.uid ?: throw Exception("User not logged in")
+        val wishlistRef = firebaseDatabase.getReference("wishlist/$userId")
+        wishlistRef.child(productId.toString()).removeValue().await()
+    }
+    
+    suspend fun getWishlistItems(): List<String> {
+        val userId = firebaseAuth.currentUser?.uid ?: return emptyList()
+        val wishlistRef = firebaseDatabase.getReference("wishlist/$userId")
+        val snapshot = wishlistRef.get().await()
+        return snapshot.children.mapNotNull { it.key }
+    }
+    
+    suspend fun isInWishlist(productId: Int): Boolean {
+        val userId = firebaseAuth.currentUser?.uid ?: return false
+        val wishlistRef = firebaseDatabase.getReference("wishlist/$userId")
+        val snapshot = wishlistRef.child(productId.toString()).get().await()
+        return snapshot.exists()
+    }
 }

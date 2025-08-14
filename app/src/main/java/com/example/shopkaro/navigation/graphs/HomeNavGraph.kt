@@ -12,6 +12,9 @@ import androidx.navigation.navigation
 import com.example.shopkaro.ui.screens.HomeScreen
 import com.example.shopkaro.ui.screens.product_detail.ProductDetailScreen
 import com.example.shopkaro.ui.screens.product_detail.ProductDetailViewModel
+import com.example.shopkaro.ui.screens.search.SearchScreen
+import com.example.shopkaro.ui.screens.categories.CategoriesScreen
+import com.example.shopkaro.ui.screens.categories.CategoryProductsScreen
 
 fun NavGraphBuilder.homeNavGraph(navController: NavHostController, modifier: Modifier) {
     navigation(
@@ -23,6 +26,12 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController, modifier: Mod
                 modifier = modifier,
                 navigateToProduct = { id ->
                     navController.navigate(HomeScreens.ProductDetailScreen.passArgs(id))
+                },
+                navigateToSearch = {
+                    navController.navigate(HomeScreens.SearchScreen.route)
+                },
+                navigateToCategories = {
+                    navController.navigate(HomeScreens.CategoriesScreen.route)
                 }
             )
         }
@@ -43,6 +52,45 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController, modifier: Mod
                 removeFromCart = { productId -> productDetailViewModel.removeFromCart(productId) }
             )
         }
+        
+        composable(HomeScreens.SearchScreen.route) {
+            SearchScreen(
+                navigateToProduct = { id ->
+                    navController.navigate(HomeScreens.ProductDetailScreen.passArgs(id))
+                },
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        
+        composable(HomeScreens.CategoriesScreen.route) {
+            CategoriesScreen(
+                navigateToCategory = { category ->
+                    navController.navigate(HomeScreens.CategoryProductsScreen.passArgs(category))
+                }
+            )
+        }
+        
+        composable(
+            HomeScreens.CategoryProductsScreen.route,
+            arguments = listOf(
+                navArgument("category") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val category = backStackEntry.arguments?.getString("category") ?: ""
+            CategoryProductsScreen(
+                category = category,
+                navigateToProduct = { id ->
+                    navController.navigate(HomeScreens.ProductDetailScreen.passArgs(id))
+                },
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
     }
 }
 
@@ -51,6 +99,13 @@ sealed class HomeScreens(val route: String) {
     object ProductDetailScreen : HomeScreens("product_detail/{productId}") {
         fun passArgs(id: Int): String {
             return "product_detail/$id"
+        }
+    }
+    object SearchScreen : HomeScreens("search")
+    object CategoriesScreen : HomeScreens("categories")
+    object CategoryProductsScreen : HomeScreens("category_products/{category}") {
+        fun passArgs(category: String): String {
+            return "category_products/$category"
         }
     }
 }

@@ -99,6 +99,15 @@ dependencies {
     //lottie
     implementation (libs.lottie.compose)
 
+    //datastore
+    implementation(libs.androidx.datastore)
+    
+    //extended icons
+    implementation(libs.androidx.compose.icons)
+    
+    //swipe refresh
+    implementation(libs.swiperefresh)
+
     implementation(platform("com.google.firebase:firebase-bom:34.1.0"))
 
     implementation("com.google.firebase:firebase-analytics")

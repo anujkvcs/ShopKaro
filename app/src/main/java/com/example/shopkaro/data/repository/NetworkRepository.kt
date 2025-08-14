@@ -13,6 +13,10 @@ class NetworkRepository @Inject constructor(private val networkApi: NetworkApi) 
             networkApi.fetchProducts()
         }
     }
+    
+    suspend fun getProducts(): List<ProductResponse> {
+        return fetchProducts()
+    }
 
     suspend fun fetchProduct(id: Int): ProductResponse {
         return withContext(Dispatchers.IO) {

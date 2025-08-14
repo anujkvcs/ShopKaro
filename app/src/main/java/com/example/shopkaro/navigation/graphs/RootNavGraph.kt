@@ -29,4 +29,8 @@ object Graph {
     const val HOME = "home_graph"
     const val PROFILE = "profile_graph"
     const val CART = "cart_graph"
+    const val WISHLIST = "wishlist_graph"
+    const val SEARCH = "search_screen"
+    const val CATEGORIES = "categories_screen"
+    const val CATEGORY_PRODUCTS = "category_products_screen"
 }
